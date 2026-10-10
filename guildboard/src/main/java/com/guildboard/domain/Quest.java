@@ -12,7 +12,7 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public final class Quest {
-    public static final int MAX_QUESTS = 3;
+    public static final int MAX_ACTIVE_QUESTS = 3;
 
     @EqualsAndHashCode.Include
     private final QuestId id;
@@ -52,6 +52,12 @@ public final class Quest {
             throw new IllegalArgumentException("activeQuests must not be negative: " + activeQuests);
         }
         requireStatus(QuestStatus.PUBLISHED);
+        if (!adventurerRank.canTake(requiredRank)) {
+            throw new DomainException(new DomainError.RankTooLow(adventurerRank, requiredRank));
+        }
+
+        if (activeQuests >= MAX_ACTIVE_QUESTS) 
+            throw new DomainException(new DomainError.TooManyActiveQuests(activeQuests, MAX_ACTIVE_QUESTS));
         assignedTo = Objects.requireNonNull(adventurerId, "adventurerId");
         status = QuestStatus.ACCEPTED;
     }
