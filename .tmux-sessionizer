@@ -1,0 +1,9 @@
+tmux send-keys "cd guildboard/" C-m
+tmux send-keys "vi ." C-m
+tmux new-window -n "test"
+tmux send-keys "cd guildboard/" C-m
+tmux new-window -n "server"
+tmux send-keys "./read.sh" C-m
+tmux send-keys "cd guildboard/" C-m
+tmux select-window -t 0
+

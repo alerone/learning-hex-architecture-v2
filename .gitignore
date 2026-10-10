@@ -1,0 +1,15 @@
+build/
+# Gradle
+.gradle/
+# Editores e IDE (NeoVim con jdtls, IntelliJ)
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+/out/
+# Java y sistema
+*.class
+*.log
+.DS_Store
+bin/
