@@ -1,4 +1,4 @@
-package com.guildboard.adapter.in.web;
+package com.guildboard.adapter.in.web.dto;
 
 import com.guildboard.domain.Rank;
 

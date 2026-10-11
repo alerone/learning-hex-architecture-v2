@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.guildboard.adapter.in.web.dto.AdventurerResponse;
+import com.guildboard.adapter.in.web.dto.RegisterAdventurerRequest;
+import com.guildboard.adapter.in.web.mapper.AdventurerWebMapper;
 import com.guildboard.application.port.in.GetAdventurerUseCase;
 import com.guildboard.application.port.in.RegisterAdventurerUseCase;
 import com.guildboard.domain.Adventurer;
@@ -31,15 +34,16 @@ public class AdventurerController {
     @GetMapping("/{id}")
     ResponseEntity<AdventurerResponse> getById(@PathVariable("id") String id) {
         return getAdventurer.get(new AdventurerId(id))
-            .map(AdventurerResponse::from)
+            .map(AdventurerWebMapper::toResponse)
             .map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping()
     ResponseEntity<AdventurerResponse> register(@RequestBody RegisterAdventurerRequest rq) {
-        Adventurer adventurer = registerAdventurer.register(rq.name());
+        Adventurer adventurer = registerAdventurer.register(
+                AdventurerWebMapper.toCommand(rq));
         return ResponseEntity.created(URI.create("/adventurers/" + adventurer.getId().value()))
-            .body(AdventurerResponse.from(adventurer));
+            .body(AdventurerWebMapper.toResponse(adventurer));
     }
 
 }

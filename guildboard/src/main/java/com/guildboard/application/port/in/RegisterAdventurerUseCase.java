@@ -7,5 +7,5 @@ import com.guildboard.domain.Adventurer;
  */
 public interface RegisterAdventurerUseCase {
 
-    Adventurer register(String name);
+    Adventurer register(RegisterAdventurerCommand command);
 }
