@@ -51,7 +51,10 @@ public final class Quest {
         if (activeQuests < 0) {
             throw new IllegalArgumentException("activeQuests must not be negative: " + activeQuests);
         }
-        requireStatus(QuestStatus.PUBLISHED);
+
+        if (status != QuestStatus.PUBLISHED) {
+            throw new DomainException(new DomainError.QuestNotPublished(id, status));
+        }
         if (!adventurerRank.canTake(requiredRank)) {
             throw new DomainException(new DomainError.RankTooLow(adventurerRank, requiredRank));
         }

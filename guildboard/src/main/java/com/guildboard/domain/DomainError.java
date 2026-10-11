@@ -10,6 +10,7 @@ public sealed interface DomainError {
             QuestStatus expected) implements DomainError {}
     record RankTooLow(Rank adventurerRank, Rank requiredRank) implements DomainError {}
     record TooManyActiveQuests(int active, int limit) implements DomainError {}
+    record QuestNotPublished(QuestId id, QuestStatus actual) implements DomainError {}
 
     default String code() {
         return switch(this) {
@@ -18,6 +19,7 @@ public sealed interface DomainError {
             case InvalidTransition e -> "INVALID_TRANSITION";
             case RankTooLow e -> "RANK_TOO_LOW";
             case TooManyActiveQuests e -> "TOO_MANY_ACTIVE_QUESTS";
+            case QuestNotPublished e -> "QUEST_NOT_PUBLISHED";
         };
     }
 }

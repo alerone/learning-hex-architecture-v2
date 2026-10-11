@@ -2,6 +2,7 @@ package com.guildboard.application.port.out;
 
 import java.util.Optional;
 
+import com.guildboard.domain.AdventurerId;
 import com.guildboard.domain.Quest;
 import com.guildboard.domain.QuestId;
 
@@ -12,4 +13,6 @@ public interface QuestRepository {
     Optional<Quest> findById(QuestId id);
 
     void save(Quest quest);
+
+    int countActiveBy(AdventurerId adventurerId);
 }

@@ -25,6 +25,9 @@ public final class DomainException extends RuntimeException {
             case DomainError.TooManyActiveQuests(int active, int limit) -> 
                 "adventurer has " + active 
                 + " active quests, the limit is " + limit;
+            case DomainError.QuestNotPublished(QuestId id, QuestStatus actual) ->
+                "quest " + id.value() + " status is: " + actual + " and status must be " + 
+                QuestStatus.PUBLISHED;
         };
     }
 

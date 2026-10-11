@@ -1,0 +1,45 @@
+package com.guildboard.adapter.in.web;
+
+import java.net.URI;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.guildboard.application.port.in.GetAdventurerUseCase;
+import com.guildboard.application.port.in.RegisterAdventurerUseCase;
+import com.guildboard.domain.Adventurer;
+import com.guildboard.domain.AdventurerId;
+
+import lombok.RequiredArgsConstructor;
+
+/**
+ * AdventurerController
+ */
+@RestController()
+@RequestMapping("/adventurers")
+@RequiredArgsConstructor 
+public class AdventurerController {
+
+    private final GetAdventurerUseCase getAdventurer;
+    private final RegisterAdventurerUseCase registerAdventurer;
+
+    @GetMapping("/{id}")
+    ResponseEntity<AdventurerResponse> getById(@PathVariable("id") String id) {
+        return getAdventurer.get(new AdventurerId(id))
+            .map(AdventurerResponse::from)
+            .map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PostMapping()
+    ResponseEntity<AdventurerResponse> register(@RequestBody RegisterAdventurerRequest rq) {
+        Adventurer adventurer = registerAdventurer.register(rq.name());
+        return ResponseEntity.created(URI.create("/adventurers/" + adventurer.getId().value()))
+            .body(AdventurerResponse.from(adventurer));
+    }
+
+}
