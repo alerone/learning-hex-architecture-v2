@@ -1,5 +1,7 @@
 package com.guildboard.application.service;
 
+import java.time.Clock;
+
 import com.guildboard.application.port.in.AcceptQuestCommand;
 import com.guildboard.application.port.in.AcceptQuestUseCase;
 import com.guildboard.application.port.out.AdventurerRepository;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class AcceptQuestService implements AcceptQuestUseCase {
     private final QuestRepository quests;
     private final AdventurerRepository adventurers;
+    private final Clock clock;
 
     @Override
     public Quest accept(AcceptQuestCommand command) {
@@ -27,6 +30,7 @@ public class AcceptQuestService implements AcceptQuestUseCase {
         Adventurer adventurer = adventurers.findById(command.adventurer()).orElseThrow(() ->
                 new DomainException(new DomainError.AdventurerNotFound(command.adventurer())));
 
+        quest.requireNotExpired(clock);
         int active = quests.countActiveBy(command.adventurer());
         quest.accept(adventurer.getId(), adventurer.getRank(), active);
         quests.save(quest);

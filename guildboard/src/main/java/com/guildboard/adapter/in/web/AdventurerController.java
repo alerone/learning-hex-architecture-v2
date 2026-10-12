@@ -18,6 +18,7 @@ import com.guildboard.application.port.in.RegisterAdventurerUseCase;
 import com.guildboard.domain.Adventurer;
 import com.guildboard.domain.AdventurerId;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -39,7 +40,8 @@ public class AdventurerController {
     }
 
     @PostMapping()
-    ResponseEntity<AdventurerResponse> register(@RequestBody RegisterAdventurerRequest rq) {
+    ResponseEntity<AdventurerResponse> register(
+            @Valid @RequestBody RegisterAdventurerRequest rq) {
         Adventurer adventurer = registerAdventurer.register(
                 AdventurerWebMapper.toCommand(rq));
         return ResponseEntity.created(URI.create("/adventurers/" + adventurer.getId().value()))

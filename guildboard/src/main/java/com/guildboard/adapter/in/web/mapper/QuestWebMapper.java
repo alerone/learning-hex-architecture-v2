@@ -1,6 +1,10 @@
 package com.guildboard.adapter.in.web.mapper;
 
 import com.guildboard.adapter.in.web.dto.QuestResponse;
+
+import java.time.Duration;
+import java.time.Instant;
+
 import com.guildboard.adapter.in.web.dto.AcceptQuestRequest;
 import com.guildboard.adapter.in.web.dto.PublishQuestRequest;
 import com.guildboard.application.port.in.AcceptQuestCommand;
@@ -9,6 +13,7 @@ import com.guildboard.application.port.in.PublishQuestCommand;
 import com.guildboard.domain.AdventurerId;
 import com.guildboard.domain.Quest;
 import com.guildboard.domain.QuestId;
+import com.guildboard.domain.Rank;
 import com.guildboard.domain.Reward;
 
 /**
@@ -26,7 +31,13 @@ public final class QuestWebMapper {
     }
 
     public static PublishQuestCommand toPublishCommand(PublishQuestRequest rq) {
-        return new PublishQuestCommand(rq.title(), new Reward(rq.reward()), rq.requiredRank());
+        Duration validFor = rq.validForMinutes() == null 
+            ? null 
+            : Duration.ofMinutes(rq.validForMinutes());
+        return new PublishQuestCommand(rq.title(), new Reward(
+                    rq.reward()), 
+                    parseRank(rq.requiredRank()),
+                    validFor);
     }
 
     public static CompleteQuestCommand toCompleteCommand(String id) {
@@ -39,6 +50,19 @@ public final class QuestWebMapper {
                 quest.getTitle(),
                 quest.getReward().gold(),
                 quest.getRequiredRank(),
-                quest.getStatus());
+                quest.getStatus(),
+                quest.getAssignedTo().map(AdventurerId::value).orElse(null),
+                quest.getExpiresAt().map(Instant::toString).orElse(null));
+    }
+
+    public static Rank parseRank(String value) {
+        if (value != null) {
+            for (Rank rank : Rank.values()) {
+                if (rank.name().equals(value)) {
+                    return rank;
+                }
+            }
+        }
+        throw new IllegalArgumentException("unknown rank: " + value);
     }
 }

@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
 pkill evince
-evince /home/aler/learning/v2-hex-arc/docs/hexagonal-architecture.pdf >/dev/null 2>&1 & disown
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+DOC_DIR="$SCRIPT_DIR/docs/hexagonal-architecture.pdf"
+evince "$DOC_DIR" >/dev/null 2>&1 & disown
 

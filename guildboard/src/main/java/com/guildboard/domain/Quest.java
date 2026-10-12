@@ -1,5 +1,7 @@
 package com.guildboard.domain;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,10 +21,11 @@ public final class Quest {
     private final String title;
     private final Reward reward;
     private final Rank requiredRank;
+    private final Instant expiresAt;
     private QuestStatus status;
     private AdventurerId assignedTo;
 
-    private Quest(QuestId id, String title, Reward reward, Rank requiredRank) {
+    private Quest(QuestId id, String title, Reward reward, Rank requiredRank, Instant expiresAt) {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(requiredRank, "requiredRank");
         Objects.requireNonNull(reward, "reward");
@@ -34,11 +37,15 @@ public final class Quest {
         this.reward = reward;
         this.requiredRank = requiredRank;
         this.status = QuestStatus.DRAFT;
+        this.expiresAt = expiresAt;
     }
 
     public static Quest draft(QuestId id, String title, Reward reward, Rank requiredRank) {
-        return new Quest(id, title, reward, requiredRank);
+        return new Quest(id, title, reward, requiredRank, null);
     } 
+    public static Quest draft(QuestId id, String title, Reward reward, Rank requiredRank, Instant expiresAt) {
+        return new Quest(id, title, reward, requiredRank, expiresAt);
+    }
 
     public void publish() {
         requireStatus(QuestStatus.DRAFT);
@@ -80,4 +87,19 @@ public final class Quest {
         }
     }
     
+    public boolean isExpired(Clock clock) {
+        Objects.requireNonNull(clock, "clock");
+        return expiresAt != null && !clock.instant().isBefore(expiresAt);
+    }
+
+    public void requireNotExpired(Clock clock) {
+        if (isExpired(clock)) {
+            throw new DomainException(
+                    new DomainError.QuestExpired(id, expiresAt));
+        }
+    }
+
+    public Optional<Instant> getExpiresAt() {
+        return Optional.ofNullable(expiresAt);
+    }
 }

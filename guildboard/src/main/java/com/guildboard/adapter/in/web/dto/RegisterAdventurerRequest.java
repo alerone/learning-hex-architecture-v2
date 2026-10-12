@@ -1,7 +1,11 @@
 package com.guildboard.adapter.in.web.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 /**
  * RegisterAdventurerRequest
  */
-public record RegisterAdventurerRequest(String name) {
+public record RegisterAdventurerRequest(
+        @NotBlank @Size(max = 50) String name) {
 }

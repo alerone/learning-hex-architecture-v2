@@ -1,5 +1,7 @@
 package com.guildboard.domain;
 
+import java.time.Instant;
+
 /**
  * DomainException
  */
@@ -21,13 +23,15 @@ public final class DomainException extends RuntimeException {
             case DomainError.InvalidTransition(QuestId id, QuestStatus actual, QuestStatus expected) -> 
                 "quest " + id.value() + " is " + actual + ", expected " + expected;
             case DomainError.RankTooLow(Rank adventurerRank, Rank requiredRank) -> 
-                "rank" + adventurerRank + " cannot take a quest that requires " + requiredRank;
+                "rank " + adventurerRank + " cannot take a quest that requires " + requiredRank;
             case DomainError.TooManyActiveQuests(int active, int limit) -> 
                 "adventurer has " + active 
                 + " active quests, the limit is " + limit;
             case DomainError.QuestNotPublished(QuestId id, QuestStatus actual) ->
                 "quest " + id.value() + " status is: " + actual + " and status must be " + 
                 QuestStatus.PUBLISHED;
+            case DomainError.QuestExpired(QuestId id, Instant expiresAt) -> 
+                "quest " + id.value() + " is expired since date: " + expiresAt;
         };
     }
 

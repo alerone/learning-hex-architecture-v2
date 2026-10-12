@@ -4,6 +4,7 @@ import com.guildboard.application.port.in.CompleteQuestCommand;
 import com.guildboard.application.port.in.CompleteQuestUseCase;
 import com.guildboard.application.port.in.GrantExperienceCommand;
 import com.guildboard.application.port.in.GrantExperienceUseCase;
+import com.guildboard.application.port.out.NotificationSender;
 import com.guildboard.application.port.out.QuestRepository;
 import com.guildboard.domain.AdventurerId;
 import com.guildboard.domain.DomainError;
@@ -20,6 +21,7 @@ public class CompleteQuestService implements CompleteQuestUseCase {
 
     private final QuestRepository quests;
     private final GrantExperienceUseCase grantExperience;
+    private final NotificationSender notifications;
 
     @Override
     public Quest complete(CompleteQuestCommand command) {
@@ -34,6 +36,8 @@ public class CompleteQuestService implements CompleteQuestUseCase {
         if (points > 0) {
             grantExperience.grant(new GrantExperienceCommand(assignee, points));
         }
+
+        notifications.send(assignee, "quest completed: " + quest.getTitle());
 
         return quest;
     }
