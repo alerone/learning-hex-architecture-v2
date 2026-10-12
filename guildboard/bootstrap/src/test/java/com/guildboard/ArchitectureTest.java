@@ -44,4 +44,16 @@ public class ArchitectureTest {
                 .should().haveSimpleNameEndingWith("UseCase")
                 .check(CLASSES);
     }
+
+    @Test 
+    void adapterInDoesNotDependOnAdapterOut() {
+        noClasses().that().resideInAPackage("..adapter.in..")
+            .should().dependOnClassesThat().resideInAPackage("..adapter.out..").check(CLASSES);
+    }
+
+    @Test 
+    void adapterOutDoesNotDependOnAdapterIn() {
+        noClasses().that().resideInAPackage("..adapter.out..")
+            .should().dependOnClassesThat().resideInAPackage("..adapter.in..").check(CLASSES);
+    }
 }

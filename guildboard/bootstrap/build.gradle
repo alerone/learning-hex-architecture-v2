@@ -1,0 +1,11 @@
+plugins {
+        id 'org.springframework.boot'
+}
+dependencies {
+    implementation project(':adapters')
+    implementation project(':application')
+
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    testImplementation 'com.tngtech.archunit:archunit:1.5.1'
+}

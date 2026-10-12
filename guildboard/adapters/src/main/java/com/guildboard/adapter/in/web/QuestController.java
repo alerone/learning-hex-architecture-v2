@@ -21,7 +21,6 @@ import com.guildboard.application.port.in.PublishQuestCommand;
 import com.guildboard.application.port.in.PublishQuestUseCase;
 import com.guildboard.domain.Quest;
 import com.guildboard.domain.QuestId;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -57,14 +56,14 @@ public class QuestController {
     }
 
     @PostMapping("/{id}/accept")
-    public QuestResponse accept(@PathVariable String id,
+    public QuestResponse accept(@PathVariable("id") String id,
             @Valid @RequestBody AcceptQuestRequest request) {
         Quest quest = acceptQuest.accept(QuestWebMapper.toAcceptCommand(id, request));
         return QuestWebMapper.toResponse(quest);
     }
 
     @PostMapping("/{id}/complete")
-    public QuestResponse complete(@PathVariable String id) {
+    public QuestResponse complete(@PathVariable("id") String id) {
         Quest quest = completeQuest.complete(QuestWebMapper.toCompleteCommand(id));
         return QuestWebMapper.toResponse(quest);
     }

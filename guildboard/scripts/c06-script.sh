@@ -25,13 +25,13 @@ echo "$response" | jq
 
 NOVICE=$(echo "$response" | jq -r '.id')
 
-echo '{"adventurerId":"'$LUCIA'"}'
+curl  -X POST $URL/quests/$DRAGON/accept -H "content-type: application/json" \
+    -d '{"adventurerId":"'$LUCIA'"}' | jq
 
-curl -i -X POST $URL/quests/$DRAGON/accept -H "content-type: application/json" \
-    -d '{"adventurerId":"'$LUCIA'"}'
+curl  -X POST $URL/quests/$NOVICE/accept -H "content-type: application/json" \
+    -d '{"adventurerId":"'$LUCIA'"}' | jq
 
-curl -i -X POST $URL/quests/$NOVICE/accept -H "content-type: application/json" \
-    -d '{"adventurerId":"'$LUCIA'"}'
+curl  -X POST $URL/quests/$NOVICE/complete | jq
 
 echo
 echo ERRORES con QUEST:
