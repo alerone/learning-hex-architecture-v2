@@ -35,11 +35,6 @@ import com.guildboard.application.service.RegisterAdventurerService;
 public class BeanConfig {
 
     @Bean
-    public QuestRepository questRepository() {
-        return new InMemoryQuestRepository();
-    }
-
-    @Bean
     public PublishQuestUseCase publishQuestUseCase(QuestRepository questRepository, Clock clock) {
         return new PublishQuestService(questRepository, clock);
     }
@@ -47,11 +42,6 @@ public class BeanConfig {
     @Bean
     public GetQuestUseCase getQuestUseCase(QuestRepository questRepository) {
         return new GetQuestService(questRepository);
-    }
-
-    @Bean
-    public AdventurerRepository adventurerRepository() {
-        return new InMemoryAdventurerRepository();
     }
 
     @Bean

@@ -56,4 +56,11 @@ public class ArchitectureTest {
         noClasses().that().resideInAPackage("..adapter.out..")
             .should().dependOnClassesThat().resideInAPackage("..adapter.in..").check(CLASSES);
     }
+
+    @Test 
+    void adapterInDoesNotUseJpa() {
+        noClasses().that().resideInAPackage("..adapter.in..")
+            .should().dependOnClassesThat().resideInAPackage("jakarta.persistence..")
+            .check(CLASSES);
+    }
 }
