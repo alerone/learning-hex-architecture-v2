@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
  */
 class QuestExpirationTest {
     private static final QuestId ID = new QuestId("q-1");
-    private static final AdventurerId HERO = new AdventurerId("h-1");
     private static final String DEADLINE = "2026-10-10T12:00:00Z";
 
     private static Quest publish() {

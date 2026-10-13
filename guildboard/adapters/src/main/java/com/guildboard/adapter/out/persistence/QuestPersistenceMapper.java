@@ -36,13 +36,13 @@ final class QuestPersistenceMapper {
         QuestStatus status = QuestStatus.valueOf(entity.getStatus());
 
         switch(status) {
-            case DRAFT: {};
-            case PUBLISHED: quest.publish();
-            case ACCEPTED: restoreAccepted(quest, entity);
-            case COMPLETED:  {
+            case DRAFT ->  {}
+            case PUBLISHED ->  quest.publish();
+            case ACCEPTED ->  restoreAccepted(quest, entity);
+            case COMPLETED ->  {
                 restoreAccepted(quest, entity);
                 quest.complete();
-            };
+            }
         };
         return quest;
     }

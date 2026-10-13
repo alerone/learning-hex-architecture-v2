@@ -5,8 +5,6 @@ import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.guildboard.adapter.out.memory.InMemoryAdventurerRepository;
-import com.guildboard.adapter.out.memory.InMemoryQuestRepository;
 import com.guildboard.adapter.out.notification.LogNotificationSender;
 import com.guildboard.application.port.in.AcceptQuestUseCase;
 import com.guildboard.application.port.in.CompleteQuestUseCase;

@@ -1,5 +1,6 @@
 package com.guildboard.domain;
 
+import java.util.Map;
 import java.util.Objects;
 
 import lombok.EqualsAndHashCode;
@@ -11,6 +12,12 @@ import lombok.Getter;
 @Getter 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public final class Adventurer {
+
+    private static final Map<Rank, Integer> THRESHOLDS = Map.of(
+            Rank.NOVICE, 0,
+            Rank.ADEPT, 100,
+            Rank.VETERAN, 300);
+
     @EqualsAndHashCode.Include
     private final AdventurerId id;
     private String name;
@@ -30,8 +37,24 @@ public final class Adventurer {
         return new Adventurer(id, name);
     }
 
-    public void gainExperience(int points) {
+    public Rank gainExperience(int points) {
         if (points <= 0) throw new IllegalArgumentException("points must be positive: " + points);
+        
         experience += points;
+        Rank reached = rankFor(experience);
+        if (reached.compareTo(rank) > 0) {
+            rank = reached;
+        }
+        return rank;
     }    
+
+    private static Rank rankFor(int experience) {
+        Rank result = Rank.NOVICE;
+        for(Rank candidate: Rank.values()) {
+            if (experience >= THRESHOLDS.get(candidate)) {
+                result = candidate;
+            }
+        }
+        return result;
+    }
 }

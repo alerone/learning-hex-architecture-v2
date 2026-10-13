@@ -6,7 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-import com.guildboard.adapter.out.memory.InMemoryAdventurerRepository;
+import com.guildboard.adapter.out.persistence.AdventurerJpaRepository;
+import com.guildboard.adapter.out.persistence.JpaAdventurerRepository;
 import com.guildboard.adapter.out.persistence.JpaQuestRepository;
 import com.guildboard.adapter.out.persistence.QuestEntity;
 import com.guildboard.adapter.out.persistence.QuestJpaRepository;
@@ -30,7 +31,7 @@ public class PostgresPersistenceConfig {
     }
 
     @Bean
-    public AdventurerRepository adventurerRepository() {
-        return new InMemoryAdventurerRepository();
+    public AdventurerRepository adventurerRepository(AdventurerJpaRepository repo) {
+        return new JpaAdventurerRepository(repo);
     }
 }
