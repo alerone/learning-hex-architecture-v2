@@ -1,2 +1,9 @@
 rootProject.name = 'guildboard'
-include 'domain', 'application', 'adapters', 'bootstrap'
+['quests', 'adventurers'].each { service ->
+    ['domain', 'application', 'adapters', 'bootstrap'].each { module ->
+        def projectName = "${service}-${module}"
+        include projectName
+        project(":${projectName}").projectDir =
+        file("services/${service}/${module}")
+    }
+}

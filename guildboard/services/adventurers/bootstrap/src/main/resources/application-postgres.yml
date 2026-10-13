@@ -1,0 +1,11 @@
+spring:
+  autoconfigure:
+    exclude: []
+  datasource:
+    url: jdbc:postgresql://localhost:5432/adventurers
+    username: guildboard
+    password: guildboard
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: "none"

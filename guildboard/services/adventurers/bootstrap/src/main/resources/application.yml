@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: adventurers
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+      - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
+      - org.springframework.boot.flyway.jpa.autoconfigure.FlywayAutoConfiguration
+
+server:
+  port: 8082
+

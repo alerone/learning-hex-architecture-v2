@@ -1,0 +1,6 @@
+A=services/adventurers/bootstrap/src/test/java/com/guildboard/adventurers
+
+mkdir -p $A
+
+sed -e 's/com\.guildboard\.quests/com.guildboard.adventurers/g' \
+$T/quests/ArchitectureTest.java > $A/ArchitectureTest.java

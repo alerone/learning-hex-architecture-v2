@@ -1,6 +1,0 @@
-dependencies {
-    api project(':domain')
-
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-}

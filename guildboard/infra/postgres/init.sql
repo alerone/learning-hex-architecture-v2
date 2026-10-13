@@ -1,0 +1,2 @@
+CREATE DATABASE quests;
+CREATE DATABASE adventurers;
