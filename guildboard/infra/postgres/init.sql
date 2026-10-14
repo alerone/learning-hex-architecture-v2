@@ -1,2 +1,3 @@
 CREATE DATABASE quests;
 CREATE DATABASE adventurers;
+CREATE DATABASE treasury;

@@ -1,5 +1,5 @@
 rootProject.name = 'guildboard'
-['quests', 'adventurers'].each { service ->
+['quests', 'adventurers', 'treasury'].each { service ->
     ['domain', 'application', 'adapters', 'bootstrap'].each { module ->
         def projectName = "${service}-${module}"
         include projectName

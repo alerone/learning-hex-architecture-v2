@@ -1,6 +1,22 @@
-A=services/adventurers/bootstrap/src/test/java/com/guildboard/adventurers
+T=services/treasury
+JT=src/main/java/com/guildboard/treasury
+mkdir -p $T/domain/$JT/domain
+mkdir -p $T/domain/src/test/java/com/guildboard/treasury/domain
+mkdir -p $T/application/$JT/application/{port/in,port/out,service}
+mkdir -p $T/adapters/$JT/adapter/in/web/{dto,mapper,error}
+mkdir -p $T/adapters/$JT/adapter/out/{memory,persistence}
+mkdir -p $T/bootstrap/$JT/config
+mkdir -p $T/bootstrap/src/main/resources/db/migration
 
-mkdir -p $A
+for m in domain application adapters bootstrap; do sed 's/adventurers/treasury/g' \
+services/adventurers/$m/build.gradle > services/treasury/$m/build.gradle
+done
 
-sed -e 's/com\.guildboard\.quests/com.guildboard.adventurers/g' \
-$T/quests/ArchitectureTest.java > $A/ArchitectureTest.java
+grep -rnE "quests-|adventurers-" services/treasury --include=build.gradle
+
+grep -rn "treasury-" services/quests services/adventurers \
+--include=build.gradle
+
+./gradlew projects | grep -c "Project ':"
+
+
