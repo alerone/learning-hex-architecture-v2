@@ -12,8 +12,7 @@ public final class Ledger {
     public static Gold balanceOf(List<LedgerEntry> entries) {
         return entries.stream()
             .map(LedgerEntry::amount)
-            .reduce(Gold::plus)
-            .orElseGet(() -> Gold.ZERO);
+            .reduce(Gold.ZERO, Gold::plus);
     }
 
     
