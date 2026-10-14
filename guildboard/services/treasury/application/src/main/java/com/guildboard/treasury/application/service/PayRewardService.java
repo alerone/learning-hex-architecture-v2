@@ -8,6 +8,8 @@ import com.guildboard.treasury.application.port.in.PayRewardUseCase;
 import com.guildboard.treasury.application.port.out.AccountRepository;
 import com.guildboard.treasury.application.port.out.LedgerRepository;
 import com.guildboard.treasury.domain.Account;
+import com.guildboard.treasury.domain.DomainError;
+import com.guildboard.treasury.domain.DomainException;
 import com.guildboard.treasury.domain.LedgerEntry;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,9 @@ public class PayRewardService implements PayRewardUseCase {
 
     @Override
     public LedgerEntry pay(PayRewardCommand command) {
+        if (ledgers.existsByQuestId(command.questId())) {
+            throw new DomainException(new DomainError.QuestAlreadyPaid(command.questId()));
+        }
         LedgerEntry entry = new LedgerEntry(
                 UUID.randomUUID().toString(),
                 command.questId(), command.adventurerId(), command.amount(), clock.instant());

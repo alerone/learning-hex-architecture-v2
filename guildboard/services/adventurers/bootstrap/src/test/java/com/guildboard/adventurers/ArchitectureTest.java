@@ -2,6 +2,7 @@ package com.guildboard.adventurers;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -62,5 +63,16 @@ public class ArchitectureTest {
         noClasses().that().resideInAPackage("..adapter.in..")
             .should().dependOnClassesThat().resideInAPackage("jakarta.persistence..")
             .check(CLASSES);
+    }
+
+    @Test 
+    void servicesDoNotDependOnEachOther() {
+        JavaClasses allClasses = new ClassFileImporter()
+            .withImportOption(new ImportOption.DoNotIncludeTests())
+            .importPackages("com.guildboard");
+
+        slices().matching("com.guildboard.(*)..")
+            .should().notDependOnEachOther()
+            .check(allClasses);
     }
 }

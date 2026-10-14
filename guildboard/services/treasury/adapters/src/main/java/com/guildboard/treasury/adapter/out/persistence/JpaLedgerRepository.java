@@ -2,8 +2,12 @@ package com.guildboard.treasury.adapter.out.persistence;
 
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
+
 import com.guildboard.treasury.application.port.out.LedgerRepository;
 import com.guildboard.treasury.domain.AdventurerId;
+import com.guildboard.treasury.domain.DomainError;
+import com.guildboard.treasury.domain.DomainException;
 import com.guildboard.treasury.domain.LedgerEntry;
 import com.guildboard.treasury.domain.QuestId;
 
@@ -24,7 +28,11 @@ public class JpaLedgerRepository implements LedgerRepository{
 
     @Override
     public void save(LedgerEntry entry) {
-        repo.save(LedgerEntryPersistenceMapper.toEntity(entry));
+        try {
+            repo.saveAndFlush(LedgerEntryPersistenceMapper.toEntity(entry));
+        } catch (DataIntegrityViolationException e) {
+            throw new DomainException(new DomainError.QuestAlreadyPaid(entry.questId()));
+        }
     }
 
     @Override
