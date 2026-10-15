@@ -3,6 +3,7 @@ package com.guildboard.quests.application.service;
 import com.guildboard.quests.application.port.in.CompleteQuestCommand;
 import com.guildboard.quests.application.port.in.CompleteQuestUseCase;
 import com.guildboard.quests.application.port.out.NotificationSender;
+import com.guildboard.quests.application.port.out.QuestEventPublisher;
 import com.guildboard.quests.application.port.out.QuestRepository;
 import com.guildboard.quests.domain.AdventurerId;
 import com.guildboard.quests.domain.DomainError;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class CompleteQuestService implements CompleteQuestUseCase {
 
     private final QuestRepository quests;
+    private final QuestEventPublisher events;
     private final NotificationSender notifications;
 
     @Override
@@ -30,6 +32,7 @@ public class CompleteQuestService implements CompleteQuestUseCase {
                 new IllegalStateException("accepted quest without assignee: " + quest.getId().value()));
         quests.save(quest);
 
+        events.questCompleted(quest.getId(), assignee, quest.getReward());
         notifications.send(assignee, "quest completed: " + quest.getTitle());
 
         return quest;

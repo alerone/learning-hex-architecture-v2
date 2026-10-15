@@ -7,7 +7,23 @@ spring:
       - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
       - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
       - org.springframework.boot.flyway.jpa.autoconfigure.FlywayAutoConfiguration
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: adventurers
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        "[spring.deserializer.value.delegate.class]": org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+        "[spring.json.default.type]": com.guildboard.adventurers.adapter.in.messaging.QuestCompleted
+        "[spring.json.trusted.package]": com.guildboard.adventurers.adapter.in.messaging
+        "[spring.json.use.type.headers]": false
 
 server:
   port: 8082
 
+guildboard:
+  messaging:
+    topic: guildboard.quest-completed
+    dead-letter-topic: guidlboard.quest-completed-adventurers-dlt
