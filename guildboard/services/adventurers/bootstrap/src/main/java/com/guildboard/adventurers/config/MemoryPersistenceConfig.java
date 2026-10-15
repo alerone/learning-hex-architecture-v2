@@ -5,8 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import com.guildboard.adventurers.adapter.out.memory.InMemoryAdventurerRepository;
-import com.guildboard.adventurers.adapter.out.persistence.AdventurerJpaRepository;
-import com.guildboard.adventurers.adapter.out.persistence.JpaAdventurerRepository;
 import com.guildboard.adventurers.application.port.out.AdventurerRepository;
 
 

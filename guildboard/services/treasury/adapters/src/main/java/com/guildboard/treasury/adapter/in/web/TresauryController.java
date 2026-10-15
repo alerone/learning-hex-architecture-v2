@@ -1,6 +1,5 @@
 package com.guildboard.treasury.adapter.in.web;
 
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +42,7 @@ public class TresauryController {
                .body(TresauryWebMapper.toResponse(entry));
     }
 
-    @GetMapping("/account/{adventurerId}")
+    @GetMapping("/accounts/{adventurerId}")
     public ResponseEntity<AccountResponse> account(
             @PathVariable("adventurerId") String adventurerId) {
             return getAccount.get(new AdventurerId(adventurerId))

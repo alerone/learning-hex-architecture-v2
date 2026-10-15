@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,12 +16,14 @@ import lombok.NoArgsConstructor;
 @Table(name = "accounts")
 @Getter 
 @AllArgsConstructor  
-@NoArgsConstructor 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AccountEntity {
 
 
     @Id 
-    @Column(name = "owner")
-    private String owner;
-      
+    @Column(name = "adventurer_id")
+    private String adventurerId;
+
+    @Column(name = "balance")
+    private int balance;
 }

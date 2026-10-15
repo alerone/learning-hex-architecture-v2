@@ -1,4 +1,4 @@
-CREATE TABLE account (
+CREATE TABLE accounts (
     adventurer_id VARCHAR(64) PRIMARY KEY,
     balance INTEGER NOT NULL
 );

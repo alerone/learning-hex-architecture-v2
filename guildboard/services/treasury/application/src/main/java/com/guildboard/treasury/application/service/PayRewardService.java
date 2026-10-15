@@ -10,6 +10,7 @@ import com.guildboard.treasury.application.port.out.LedgerRepository;
 import com.guildboard.treasury.domain.Account;
 import com.guildboard.treasury.domain.DomainError;
 import com.guildboard.treasury.domain.DomainException;
+import com.guildboard.treasury.domain.Gold;
 import com.guildboard.treasury.domain.LedgerEntry;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class PayRewardService implements PayRewardUseCase {
         ledgers.save(entry);
         Account account = accounts.findById(command.adventurerId())
             .orElseGet(() -> Account.open(command.adventurerId()));
+        account.credit(new Gold(command.amount().coins()));
         accounts.save(account);
         return entry;
     }

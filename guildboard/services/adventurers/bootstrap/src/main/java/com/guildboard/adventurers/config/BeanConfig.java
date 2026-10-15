@@ -1,8 +1,5 @@
 package com.guildboard.adventurers.config;
 
-import java.time.Clock;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

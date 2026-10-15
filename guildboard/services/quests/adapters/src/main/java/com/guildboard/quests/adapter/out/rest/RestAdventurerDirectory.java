@@ -25,7 +25,7 @@ public class RestAdventurerDirectory implements AdventurerDirectory{
     public Optional<AdventurerView> findById(AdventurerId id) {
         try {
             AdventurerPayload payload = client.get()
-                .uri("/adventurers/{id}", "7d1c4e52")
+                .uri("/adventurers/{id}", id.value())
                 .retrieve()
                 .body(AdventurerPayload.class);
             return Optional.ofNullable(payload)

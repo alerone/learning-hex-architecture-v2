@@ -3,6 +3,7 @@ package com.guildboard.treasury.adapter.out.persistence;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.guildboard.treasury.application.port.out.LedgerRepository;
 import com.guildboard.treasury.domain.AdventurerId;
@@ -16,12 +17,14 @@ import lombok.AllArgsConstructor;
 /**
  * JpaLedgerRepository
  */
-@AllArgsConstructor 
-public class JpaLedgerRepository implements LedgerRepository{
+@AllArgsConstructor
+@Transactional
+public class JpaLedgerRepository implements LedgerRepository {
 
     private final LedgerJpaRepository repo;
 
     @Override
+    @Transactional(readOnly = true)
     public boolean existsByQuestId(QuestId questId) {
         return repo.existsByQuestId(questId.value());
     }
@@ -36,10 +39,10 @@ public class JpaLedgerRepository implements LedgerRepository{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<LedgerEntry> findByAdventurerId(AdventurerId adventurerId) {
         return repo.findByAdventurerId(adventurerId.value()).stream()
-            .map(LedgerEntryPersistenceMapper::toDomain).toList();
+                .map(LedgerEntryPersistenceMapper::toDomain).toList();
     }
 
-    
 }
