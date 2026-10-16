@@ -14,6 +14,7 @@ import com.guildboard.quests.application.port.in.GetQuestUseCase;
 import com.guildboard.quests.application.port.in.PublishQuestUseCase;
 import com.guildboard.quests.application.port.out.AdventurerDirectory;
 import com.guildboard.quests.application.port.out.NotificationSender;
+import com.guildboard.quests.application.port.out.QuestEventPublisher;
 import com.guildboard.quests.application.port.out.QuestRepository;
 import com.guildboard.quests.application.service.AcceptQuestService;
 import com.guildboard.quests.application.service.CompleteQuestService;
@@ -49,8 +50,9 @@ public class BeanConfig {
     @Bean
     public CompleteQuestUseCase completeQuestUseCase(
             QuestRepository quests,
+            QuestEventPublisher publisher,
             NotificationSender notificationSender) {
-        return new CompleteQuestService(quests, notificationSender);
+        return new CompleteQuestService(quests, publisher, notificationSender);
     }
 
     @Bean 

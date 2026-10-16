@@ -1,14 +1,9 @@
 package com.guildboard.treasury.adapter.in.web.mapper;
 
 import com.guildboard.treasury.adapter.in.web.dto.AccountResponse;
-import com.guildboard.treasury.adapter.in.web.dto.PayRewardRequest;
 import com.guildboard.treasury.adapter.in.web.dto.PaymentResponse;
-import com.guildboard.treasury.application.port.in.PayRewardCommand;
 import com.guildboard.treasury.domain.Account;
-import com.guildboard.treasury.domain.AdventurerId;
-import com.guildboard.treasury.domain.Gold;
 import com.guildboard.treasury.domain.LedgerEntry;
-import com.guildboard.treasury.domain.QuestId;
 
 /**
  * TresauryWebMapper
@@ -16,12 +11,6 @@ import com.guildboard.treasury.domain.QuestId;
 public final class TresauryWebMapper {
 
     private TresauryWebMapper() {}
-
-    public static PayRewardCommand toCommand(PayRewardRequest rq) {
-        return new PayRewardCommand(new QuestId(rq.questId()),
-                new AdventurerId(rq.adventurerId()),
-                new Gold(rq.amount()));
-    }
 
     public static PaymentResponse toResponse(LedgerEntry entry) {
         return new PaymentResponse(
