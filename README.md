@@ -21,25 +21,7 @@ El PDF de referencia está en [`docs/hexagonal-architecture.pdf`](docs/hexagonal
 
 ## 🗺️ Vista general
 
-```
-                         ┌────────────────────┐
-   cliente ───────────▶  │  Gateway  :8080    │ ◀── config ─┐
-                         └─────────┬──────────┘             │
-          /api/quests/**  │  /api/adventurers/**  │  /api/treasury/**
-                 ▼                 ▼                    ▼       │
-          ┌────────────┐    ┌──────────────┐    ┌────────────┐  │
-          │  Quests    │───▶│ Adventurers  │    │  Treasury  │  │
-          │   :8081    │REST│    :8082     │    │   :8083    │  │
-          └─────┬──────┘ +  └──────▲───────┘    └─────▲──────┘  │
-                │  circuit        │                  │         │
-                │  breaker        │   guildboard.quest-completed
-                └───────── 📣 Kafka ─────────────────┘         │
-                                                               │
-          ┌─────────────────────┐   ┌──────────────┐           │
-          │ Config Server :8888 │───┘  PostgreSQL  │ ◀─────────┘
-          │  (config-repo/*.yml)│      :5432       │  (3 BBDD: quests / adventurers / treasury)
-          └─────────────────────┘   └──────────────┘
-```
+![Arquitectura de GuildBoard](docs/arquitectura.png)
 
 | Componente | Puerto | Responsabilidad |
 |---|---|---|
