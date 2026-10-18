@@ -1,0 +1,14 @@
+spring:
+  kafka:
+    consumer:
+      group-id: treasury
+      properties:
+        "[spring.json.value.default.type]": com.guildboard.treasury.adapter.in.messaging.QuestCompleted
+        "[spring.json.trusted.packages]": com.guildboard.treasury.adapter.in.messaging
+
+server:
+  port: 8083
+
+guildboard:
+  messaging:
+    dead-letter-topic: guildboard.quest-completed-treasury-dlt

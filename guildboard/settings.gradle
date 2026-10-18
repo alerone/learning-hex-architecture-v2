@@ -7,3 +7,5 @@ rootProject.name = 'guildboard'
         file("services/${service}/${module}")
     }
 }
+
+include 'config-server', 'gateway'

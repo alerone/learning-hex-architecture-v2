@@ -1,6 +1,14 @@
 plugins {
         id 'org.springframework.boot'
 }
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.cloud:' +
+            'spring-cloud-dependencies:2025.1.3'
+    }
+}
+
 dependencies {
     implementation project(':adventurers-adapters')
     implementation project(':adventurers-application')
@@ -11,6 +19,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-flyway'
     implementation 'org.flywaydb:flyway-database-postgresql'
     runtimeOnly 'org.postgresql:postgresql'
+
+    implementation 'org.springframework.cloud:' +
+        'spring-cloud-starter-config'
 
     testImplementation 'com.tngtech.archunit:archunit:1.5.1'
 }

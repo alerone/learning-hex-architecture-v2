@@ -1,0 +1,14 @@
+server:
+  port: 8082
+
+spring:
+  kafka:
+    consumer:
+      group-id: adventurers
+      properties:
+        "[spring.json.value.default.type]": com.guildboard.adventurers.adapter.in.messaging.QuestCompleted
+        "[spring.json.trusted.packages]": com.guildboard.adventurers.adapter.in.messaging
+
+guildboard:
+  messaging:
+    dead-letter-topic: guildboard.quest-completed-adventurers-dlt

@@ -1,26 +1,11 @@
 spring:
   application:
     name: quests
+  config:
+    import: optional:configserver:http://localhost:8888
   autoconfigure:
     exclude:
       - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
       - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
       - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
       - org.springframework.boot.flyway.jpa.autoconfigure.FlywayAutoConfiguration
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
-      properties: 
-        "[spring.json.add.type.headers]": false
-
-server:
-  port: 8081
-
-guildboard:
-  adventurers:
-    base-url: http://localhost:8082
-  messaging:
-    topic: guildboard.quest-completed
-

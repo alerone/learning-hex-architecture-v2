@@ -1,6 +1,7 @@
 package com.guildboard.quests.config;
 
 import java.time.Clock;
+import java.time.Duration;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +22,8 @@ import com.guildboard.quests.application.service.CompleteQuestService;
 import com.guildboard.quests.application.service.GetQuestService;
 import com.guildboard.quests.application.service.PublishQuestService;
 
-
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.retry.RetryRegistry;
 
 /**
  * BeanConfig
@@ -55,18 +57,25 @@ public class BeanConfig {
         return new CompleteQuestService(quests, publisher, notificationSender);
     }
 
-    @Bean 
+    @Bean
     public AdventurerDirectory adventurerDirectory(
-            @Value("${guildboard.adventurers.base-url}") String baseUrl) {
-            return new RestAdventurerDirectory(baseUrl);
-            }
+            @Value("${guildboard.adventurers.connect-timeout}") Duration connectionTimeout,
+            @Value("${guildboard.adventurers.read-timeout}") Duration readTimeout,
+            @Value("${guildboard.adventurers.base-url}") String baseUrl,
+            RetryRegistry retries,
+            CircuitBreakerRegistry breakers) {
+        return new RestAdventurerDirectory(baseUrl,
+                connectionTimeout, readTimeout,
+                breakers.circuitBreaker("adventurers"),
+                retries.retry("adventurers"));
+    }
 
-    @Bean 
+    @Bean
     public NotificationSender notificationSender() {
         return new LogNotificationSender();
     }
 
-    @Bean 
+    @Bean
     public Clock clock() {
         return Clock.systemUTC();
     }

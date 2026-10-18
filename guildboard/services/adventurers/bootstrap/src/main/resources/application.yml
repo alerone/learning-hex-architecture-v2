@@ -1,6 +1,8 @@
 spring:
   application:
     name: adventurers
+  config:
+    import: optional:configserver:http://localhost:8888
   autoconfigure:
     exclude:
       - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
@@ -20,10 +22,3 @@ spring:
         "[spring.json.trusted.packages]": com.guildboard.adventurers.adapter.in.messaging
         "[spring.json.use.type.headers]": false
 
-server:
-  port: 8082
-
-guildboard:
-  messaging:
-    topic: guildboard.quest-completed
-    dead-letter-topic: guildboard.quest-completed-adventurers-dlt

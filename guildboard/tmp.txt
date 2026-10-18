@@ -1,22 +1,5 @@
-T=services/treasury
-JT=src/main/java/com/guildboard/treasury
-mkdir -p $T/domain/$JT/domain
-mkdir -p $T/domain/src/test/java/com/guildboard/treasury/domain
-mkdir -p $T/application/$JT/application/{port/in,port/out,service}
-mkdir -p $T/adapters/$JT/adapter/in/web/{dto,mapper,error}
-mkdir -p $T/adapters/$JT/adapter/out/{memory,persistence}
-mkdir -p $T/bootstrap/$JT/config
-mkdir -p $T/bootstrap/src/main/resources/db/migration
-
-for m in domain application adapters bootstrap; do sed 's/adventurers/treasury/g' \
-services/adventurers/$m/build.gradle > services/treasury/$m/build.gradle
+for app in quests adventurers treasury gateway; do
+echo "== $app"
+curl -s localhost:8888/$app/default |
+grep -o '"[a-zA-Z0-9_-]*\.[^"]*":' | sort -u
 done
-
-grep -rnE "quests-|adventurers-" services/treasury --include=build.gradle
-
-grep -rn "treasury-" services/quests services/adventurers \
---include=build.gradle
-
-./gradlew projects | grep -c "Project ':"
-
-

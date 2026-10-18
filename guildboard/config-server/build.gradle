@@ -1,0 +1,15 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.cloud:' + 
+            'spring-cloud-dependencies:2025.1.3'
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.cloud:' +
+        'spring-cloud-config-server'
+}
