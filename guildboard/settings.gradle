@@ -9,3 +9,6 @@ rootProject.name = 'guildboard'
 }
 
 include 'config-server', 'gateway'
+
+include 'token-issuer'
+project(':token-issuer').projectDir = file('tools/token-issuer')
