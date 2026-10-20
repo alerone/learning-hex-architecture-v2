@@ -23,6 +23,7 @@ public final class AdventurerClientFactory {
         return RestClient.builder()
             .baseUrl(baseUrl)
             .requestFactory(factory)
+            .requestInterceptor(new BearerTokenForwardingInterceptor())
             .build();
     }
     

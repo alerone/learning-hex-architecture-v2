@@ -1,5 +1,13 @@
-for app in quests adventurers treasury gateway; do
-echo "== $app"
-curl -s localhost:8888/$app/default |
-grep -o '"[a-zA-Z0-9_-]*\.[^"]*":' | sort -u
-done
+tok() {
+curl -s -X POST localhost:9000/token \
+-H 'Content-Type: application/json' \
+-d "{\"username\":\"$1\",\"password\":\"$1\"}" |
+grep -o '"access_token" *: *"[^"]*"' | cut -d'"' -f4
+}
+
+b64url() {
+local s
+s=$(printf ' %s' "$1" | tr '_-' '/+')
+while [ $(( ${#s} % 4 )) -ne 0 ]; do s="$s="; done
+printf ' %s' "$s" | base64 -d
+}

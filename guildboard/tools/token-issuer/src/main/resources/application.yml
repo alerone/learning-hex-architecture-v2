@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: token-issuer
+
+server:
+  port: 9000
+
+guildboard:
+  token-issuer:
+    issuer: http://localhost:9000
+    ttl: 15m
+    users:
+      - username: master
+        password: master
+        subject: master
+        role: GUILD_MASTER
+      - username: hero
+        password: hero
+        subject: 649405bf-938f-4426-9aba-78f50c311c4c
+        role: ADVENTURER

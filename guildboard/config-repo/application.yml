@@ -13,6 +13,12 @@ spring:
       properties:
         "[spring.deserializer.value.delegate.class]": org.springframework.kafka.support.serializer.JacksonJsonDeserializer
         "[spring.json.use.type.headers]": false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000
+          jwk-set-uri: http://localhost:9000/.well-known/jwks.json
 
 
 guildboard:

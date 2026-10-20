@@ -40,7 +40,7 @@ public class TokenController {
     public ResponseEntity<Map<String,Object>> token(@RequestBody TokenRequest request) {
         Optional<IssuerProperties.User> found = properties.users()
             .stream()
-            .filter(u -> u.username().equals(request.username() && u.password().equals(request.password())))
+            .filter(u -> u.username().equals(request.username()) && u.password().equals(request.password()))
             .findFirst();
         if (found.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

@@ -14,6 +14,5 @@ public record IssuerProperties(
         String issuer,
         @DefaultValue("15m") Duration ttl,
         List<User> users) {
-
-    public record User(String username, String password, String subject, String role);
+    public record User(String username, String password, String subject, String role){}
 }

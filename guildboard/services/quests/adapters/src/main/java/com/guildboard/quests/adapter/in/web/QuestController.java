@@ -2,13 +2,17 @@ package com.guildboard.quests.adapter.in.web;
 
 import java.net.URI;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.guildboard.quests.adapter.in.web.dto.AcceptQuestRequest;
 import com.guildboard.quests.adapter.in.web.dto.PublishQuestRequest;
@@ -56,9 +60,16 @@ public class QuestController {
     }
 
     @PostMapping("/{id}/accept")
-    public QuestResponse accept(@PathVariable("id") String id,
-            @Valid @RequestBody AcceptQuestRequest request) {
-        Quest quest = acceptQuest.accept(QuestWebMapper.toAcceptCommand(id, request));
+    public QuestResponse accept(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody(required = false) AcceptQuestRequest request) {
+        String subject = jwt.getSubject();
+        if (request != null && request.adventurerId() != null &&
+                !request.adventurerId().equals(subject))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "the token does not belong to that adventurer. You are trying to do malicious nasty things.");
+        Quest quest = acceptQuest.accept(QuestWebMapper.toAcceptCommand(id, subject));
         return QuestWebMapper.toResponse(quest);
     }
 

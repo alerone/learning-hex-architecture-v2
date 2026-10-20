@@ -25,9 +25,8 @@ public final class QuestWebMapper {
 
     public static AcceptQuestCommand toAcceptCommand( 
             String questId,
-            AcceptQuestRequest request) {
-        return new AcceptQuestCommand(new QuestId(questId),
-                new AdventurerId(request.adventurerId()));
+            String adventurerId) {
+        return new AcceptQuestCommand(new QuestId(questId), new AdventurerId(adventurerId));
     }
 
     public static PublishQuestCommand toPublishCommand(PublishQuestRequest rq) {
