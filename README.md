@@ -30,6 +30,7 @@ El PDF de referencia está en [`docs/hexagonal-architecture.pdf`](docs/hexagonal
 | **adventurers** | 8082 | Registro de aventureros, experiencia y rango |
 | **treasury** | 8083 | Cuentas de oro y libro contable (*ledger*) |
 | **config-server** | 8888 | Configuración centralizada desde `config-repo/` |
+| **token-issuer** | 9000 | Emisor de JWT (RS256) de desarrollo; publica sus claves en `/.well-known/jwks.json` |
 | **kafka** | 9092 | Bus de eventos |
 | **postgres** | 5432 | Una base de datos por servicio |
 
@@ -80,11 +81,25 @@ curl localhost:8888/quests/default
 > ./gradlew :quests-bootstrap:bootRun --args='--spring.profiles.active=postgres'
 > ```
 
-### 4️⃣ Probar el flujo completo
+### 4️⃣ Token issuer (desde el capítulo 14)
+
+Los servicios son ahora *resource servers* JWT y validan los tokens contra el JWKS de `:9000`. Arranca el emisor (junto al resto, tras el Config Server):
 
 ```bash
-./scripts/c13-script.sh     # recorre todo el flujo a través del gateway
+./gradlew :token-issuer:bootRun
 ```
+
+Usuarios de desarrollo (en `tools/token-issuer/src/main/resources/application.yml`): `master/master` (rol `GUILD_MASTER`) y `hero/hero` (rol `ADVENTURER`, con `subject` = id de la aventurera). Obtener un token:
+
+```bash
+curl -s -X POST localhost:9000/token -H 'Content-Type: application/json' \
+  -d '{"username":"master","password":"master"}'
+# → {"access_token":"…","token_type":"Bearer","expires_in":900}
+```
+
+### 5️⃣ Probar el flujo completo
+
+> ⚠️ Desde el capítulo 14 todas las peticiones necesitan `Authorization: Bearer <token>`; los `curl` de abajo son el flujo sin autenticar y devolverán `401` hasta que añadas la cabecera.
 
 O a mano, todo por `localhost:8080`:
 
@@ -99,7 +114,7 @@ curl -s -X POST localhost:8080/api/quests \
   -H 'Content-Type: application/json' \
   -d '{"title":"Limpiar la casa","reward":150,"requiredRank":"NOVICE"}'
 
-# 3. Aceptarla  (usa los ids devueltos)
+# 3. Aceptarla  (usa los ids devueltos; con JWT el aventurero sale del token y el cuerpo es opcional)
 curl -s -X POST localhost:8080/api/quests/$QUEST/accept \
   -H 'Content-Type: application/json' -d '{"adventurerId":"'$LUCIA'"}'
 
@@ -171,6 +186,23 @@ Dueño del ciclo de vida de la misión: `DRAFT → PUBLISHED → ACCEPTED → CO
 | `/api/adventurers/**` | `:8082` | `StripPrefix=1` → `/adventurers/**` |
 | `/api/treasury/**` | `:8083` | `StripPrefix=2` → `/**` (ej. `/accounts/…`) |
 
+### 🔐 Token Issuer — `:9000`
+
+Módulo `tools/token-issuer` (no es un servicio hexagonal). Genera un par RSA en memoria al arrancar.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/token` | `{username, password}` → JWT RS256 con `sub`, `iss`, `exp` y claim `roles`; `401` si las credenciales no coinciden |
+| `GET` | `/.well-known/jwks.json` | Clave pública (JWKS) para que los servicios validen la firma |
+
+**Autorización en los servicios** (`SecurityConfig` en el adaptador web de cada uno, importado desde `bootstrap`; el claim `roles` se convierte a `ROLE_*`):
+
+| Servicio | Regla |
+|---|---|
+| **quests** | `POST /quests` → `GUILD_MASTER`; `POST /quests/*/accept` → `ADVENTURER`; `POST /quests/*/complete` → cualquiera de los dos; el resto, autenticado |
+| **adventurers** | `POST /adventurers` → `GUILD_MASTER`; el resto, autenticado |
+| **treasury** | Todo autenticado |
+
 ### ⚙️ Config Server — `:8888`
 
 Perfil `native`: sirve los ficheros de `config-repo/` (`application.yml` común + uno por servicio).
@@ -198,27 +230,30 @@ Tests de arquitectura: `ArchitectureTest` (ArchUnit) por servicio y `StructureTe
 
 ---
 
-## 🆕 Cambios nuevos y aprendizajes — Capítulo 13
+## 🆕 Cambios nuevos y aprendizajes — Capítulo 14
 
-**Tema:** API Gateway. Hasta el capítulo 12 el cliente tenía que conocer tres puertos distintos (`8081`, `8082`, `8083`); ahora hay una única puerta de entrada.
+**Tema:** Seguridad con JWT. Hasta el capítulo 13 cualquiera podía llamar a cualquier endpoint; ahora hay que presentar un token firmado y el rol decide qué se puede hacer.
 
 ### ✅ Qué se desarrolló
 
-- 🆕 Nuevo módulo `gateway` con **Spring Cloud Gateway (WebMVC)** en el puerto `8080`.
-- 🛣️ Tres rutas por prefijo (`/api/quests`, `/api/adventurers`, `/api/treasury`) hacia cada servicio.
-- ✂️ Filtros `StripPrefix` para que los servicios **no cambien**: siguen exponiendo `/quests`, `/adventurers`, `/accounts`.
-- 🔗 El gateway toma su configuración del Config Server (`config-repo/gateway.yml`).
-- 🧪 `scripts/c13-script.sh`: el mismo flujo de siempre, ahora todo contra `:8080`, incluyendo la inyección manual de un evento duplicado en Kafka para comprobar la idempotencia.
+- 🔐 Nuevo módulo `tools/token-issuer` (`:9000`): `POST /token` firma JWT **RS256** con claims `sub` y `roles`, y `GET /.well-known/jwks.json` expone la clave pública (`TokenController`, `KeyConfig`, `JwksController`).
+- 👥 Usuarios de desarrollo en `IssuerProperties` / `application.yml`: `master` (`GUILD_MASTER`) y `hero` (`ADVENTURER`).
+- 🛡️ Quests, Adventurers y Treasury son ahora **OAuth2 resource servers**: `SecurityConfig` stateless en cada adaptador web, importada desde `bootstrap` con `SecurityImportConfig`.
+- ⚙️ `config-repo/application.yml` común con `issuer-uri` y `jwk-set-uri`, así que todos validan contra el mismo emisor.
+- 🧑‍🎤 `accept` ya no se fía del cuerpo: el aventurero sale del `sub` del token; si el cuerpo trae otro `adventurerId` → `403`.
+- ➡️ `BearerTokenForwardingInterceptor`: Quests reenvía el JWT entrante al llamar por REST a Adventurers.
+- 🧪 `docs/ej14.md`: matriz de respuestas del ejercicio 14.3 (201/403/200/401) y razonamiento del 14.4.
 
 ### 🧠 Qué se aprendió
 
 | Aprendizaje | Detalle |
 |---|---|
-| **Un solo punto de entrada** | El cliente ya no depende de la topología interna; los servicios se pueden mover sin que el cliente lo note |
-| **`StripPrefix` desacopla** | El prefijo `/api/...` es asunto del gateway, no de los controladores |
-| **Ojo con la cuenta de segmentos** | `/api/treasury/accounts/x` necesita `StripPrefix=2` (a diferencia de los otros) porque Treasury no tiene prefijo propio |
-| **Gateway ≠ lógica de negocio** | Solo enruta; las reglas siguen en el dominio |
-| **Idempotencia = obligatoria con eventos** | Kafka puede entregar dos veces; el `ledger` lo resiste |
+| **Autenticación ≠ autorización** | `401` = no sabemos quién eres; `403` = sabemos quién eres pero no puedes |
+| **Firma asimétrica + JWKS** | El emisor firma con la clave privada; los servicios solo necesitan la pública para validar, sin compartir secretos |
+| **Roles por claim** | El claim `roles` se mapea a `ROLE_*` con `JwtGrantedAuthoritiesConverter` y se usa con `hasRole` |
+| **La identidad viene del token, no del cuerpo** | Aceptar una misión con `adventurerId` del cliente permitiría suplantar; se compara con `getSubject()` |
+| **Propagar la identidad entre servicios** | La llamada Quests → Adventurers debe llevar el mismo Bearer o recibirá `401` |
+| **La seguridad vive en el borde** | `SecurityConfig` está en el adaptador web; el dominio y los casos de uso no saben nada de JWT |
 
 ---
 
@@ -236,6 +271,7 @@ Tests de arquitectura: `ArchitectureTest` (ArchUnit) por servicio y `StructureTe
 | **11** | Eventos con Kafka (Treasury, XP) | Consistencia eventual; DLT; consumidores independientes |
 | **12** | Config Server | Una sola fuente de configuración para todos |
 | **13** | API Gateway | Una única puerta de entrada; `StripPrefix` |
+| **14** | Seguridad con JWT (token-issuer + resource servers) | 401 vs 403; la identidad sale del token, no del cuerpo |
 
 ### 🎓 Aprendizajes generales hasta ahora
 
@@ -247,11 +283,13 @@ Tests de arquitectura: `ArchitectureTest` (ArchUnit) por servicio y `StructureTe
 6. **Cada servicio, su base de datos.** Nada de joins entre servicios: se pide por REST o se reacciona a eventos.
 7. **Configuración externalizada.** El mismo binario, distinto entorno.
 8. **Una puerta de entrada simplifica al cliente** y oculta la topología.
+9. **Nunca confíes en la identidad que manda el cliente.** Se deriva del token firmado y se valida en cada servicio, no solo en el gateway.
 
 ### 🔭 Siguientes pasos posibles
 
 - Registro/descubrimiento de servicios en vez de URLs fijas.
 - Outbox pattern (hoy el guardado y la publicación del evento no son atómicos).
-- Seguridad en el gateway (autenticación / rate limiting).
+- Validación del JWT también en el gateway y *rate limiting*.
+- Un proveedor de identidad real (Keycloak / Spring Authorization Server) en vez del token-issuer con claves en memoria y usuarios fijos.
 - Docker para los propios servicios y observabilidad (trazas, métricas).
 - Tests de integración con Testcontainers.
