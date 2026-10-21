@@ -1,3 +1,11 @@
+MARA=$(curl -s -X POST localhost:8080/api/adventurers \
+-H "Authorization: Bearer $MASTER" \
+-H 'Content-Type: application/json' -d '{"name":"Mara"}' | jq -r '.id')
+
+echo $MARA
+
+code() { curl -s -o /dev/null -w ' %{http_code}\n' "$@"; }
+
 tok() {
 curl -s -X POST localhost:9000/token \
 -H 'Content-Type: application/json' \
@@ -5,9 +13,10 @@ curl -s -X POST localhost:9000/token \
 grep -o '"access_token" *: *"[^"]*"' | cut -d'"' -f4
 }
 
-b64url() {
-local s
-s=$(printf ' %s' "$1" | tr '_-' '/+')
-while [ $(( ${#s} % 4 )) -ne 0 ]; do s="$s="; done
-printf ' %s' "$s" | base64 -d
-}
+./gradlew :token-issuer:bootJar
+docker compose up -d --build --wait token-issuer
+MASTER=$(scripts/tok.sh master); HERO=$(scripts/tok.sh hero)
+
+code localhost:8081/actuator/health
+code localhost:8081/actuator/metrics
+docker compose logs quests | grep 'notification to'

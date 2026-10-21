@@ -23,8 +23,16 @@ dependencies {
     implementation 'org.springframework.boot:' +
         'spring-boot-starter-security-oauth2-resource-server'
 
+    implementation 'org.springframework.boot:' + 
+        'spring-boot-starter-actuator'
+
     implementation 'org.springframework.cloud:' +
         'spring-cloud-starter-config'
+    implementation 'org.springframework.boot:spring-boot-starter-zipkin'
 
     testImplementation 'com.tngtech.archunit:archunit:1.5.1'
+}
+
+tasks.named('bootJar') {
+    archiveFileName = 'app.jar'
 }

@@ -26,6 +26,15 @@ public class RestAdventurerDirectory implements AdventurerDirectory {
     private final CircuitBreaker breaker;
     private final Retry retry;
 
+    public RestAdventurerDirectory(RestClient.Builder builder,
+            String baseUrl, Duration connectTimeout, 
+            Duration readTimeout, CircuitBreaker breaker, 
+            Retry retry) {
+        this(AdventurerClientFactory.create(
+                    builder, baseUrl, connectTimeout, readTimeout),
+                breaker, retry);
+    }
+
     public RestAdventurerDirectory(
             String baseUrl,
             Duration connectionTimeout, Duration readTimeout, 

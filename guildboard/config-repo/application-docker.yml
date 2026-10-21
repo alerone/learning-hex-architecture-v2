@@ -1,0 +1,42 @@
+spring:
+  kafka:
+    bootstrap-servers: kafka:19092
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://token-issuer:9000/.well-known/jwks.json
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: quests
+              uri: http://quests:8081
+              predicates:
+               - Path=/api/quests/**
+              filters:
+               - StripPrefix=1
+            - id: adventurers
+              uri: http://adventurers:8082
+              predicates:
+               - Path=/api/adventurers/**
+              filters:
+                - StripPrefix=1
+            - id: treasury
+              uri: http://treasury:8083
+              predicates:
+                - Path=/api/treasury/**
+              filters:
+                - StripPrefix=2
+guildboard:
+  db:
+    host: postgres
+  adventurers:
+    base-url: http://adventurers:8082
+management:
+  tracing:
+    export:
+      zipkin:
+        endpoint:
+          http://zipkin:9411/api/v2/spans

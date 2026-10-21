@@ -31,6 +31,7 @@ El PDF de referencia está en [`docs/hexagonal-architecture.pdf`](docs/hexagonal
 | **treasury** | 8083 | Cuentas de oro y libro contable (*ledger*) |
 | **config-server** | 8888 | Configuración centralizada desde `config-repo/` |
 | **token-issuer** | 9000 | Emisor de JWT (RS256) de desarrollo; publica sus claves en `/.well-known/jwks.json` |
+| **zipkin** | 9411 | Visor de trazas distribuidas (desde el capítulo 15, solo en Docker) |
 | **kafka** | 9092 | Bus de eventos |
 | **postgres** | 5432 | Una base de datos por servicio |
 
@@ -96,6 +97,17 @@ curl -s -X POST localhost:9000/token -H 'Content-Type: application/json' \
   -d '{"username":"master","password":"master"}'
 # → {"access_token":"…","token_type":"Bearer","expires_in":900}
 ```
+
+### 🐳 Alternativa (capítulo 15): todo en Docker Compose
+
+En vez de los pasos 2–4, se pueden levantar todos los servicios como contenedores. Primero se construyen los JAR (los `Dockerfile` copian `build/libs/app.jar`):
+
+```bash
+./gradlew bootJar
+docker compose up -d --build --wait
+```
+
+Los servicios arrancan con los perfiles `docker,postgres` y piden su configuración a `config-server`. Las trazas se ven en `http://localhost:9411` (Zipkin) y las métricas en `localhost:8081/actuator/metrics` (con token). `scripts/tok.sh master` imprime un token y `scripts/c15-script.sh` ejercita el flujo de observabilidad.
 
 ### 5️⃣ Probar el flujo completo
 
@@ -230,30 +242,33 @@ Tests de arquitectura: `ArchitectureTest` (ArchUnit) por servicio y `StructureTe
 
 ---
 
-## 🆕 Cambios nuevos y aprendizajes — Capítulo 14
+## 🆕 Cambios nuevos y aprendizajes — Capítulo 15
 
-**Tema:** Seguridad con JWT. Hasta el capítulo 13 cualquiera podía llamar a cualquier endpoint; ahora hay que presentar un token firmado y el rol decide qué se puede hacer.
+**Tema:** Contenedores y observabilidad. Hasta el capítulo 14 los servicios se lanzaban con `bootRun` a mano; ahora todo el sistema se levanta con `docker compose` y cada petición se puede seguir con trazas (Zipkin) y métricas (Actuator).
 
 ### ✅ Qué se desarrolló
 
-- 🔐 Nuevo módulo `tools/token-issuer` (`:9000`): `POST /token` firma JWT **RS256** con claims `sub` y `roles`, y `GET /.well-known/jwks.json` expone la clave pública (`TokenController`, `KeyConfig`, `JwksController`).
-- 👥 Usuarios de desarrollo en `IssuerProperties` / `application.yml`: `master` (`GUILD_MASTER`) y `hero` (`ADVENTURER`).
-- 🛡️ Quests, Adventurers y Treasury son ahora **OAuth2 resource servers**: `SecurityConfig` stateless en cada adaptador web, importada desde `bootstrap` con `SecurityImportConfig`.
-- ⚙️ `config-repo/application.yml` común con `issuer-uri` y `jwk-set-uri`, así que todos validan contra el mismo emisor.
-- 🧑‍🎤 `accept` ya no se fía del cuerpo: el aventurero sale del `sub` del token; si el cuerpo trae otro `adventurerId` → `403`.
-- ➡️ `BearerTokenForwardingInterceptor`: Quests reenvía el JWT entrante al llamar por REST a Adventurers.
-- 🧪 `docs/ej14.md`: matriz de respuestas del ejercicio 14.3 (201/403/200/401) y razonamiento del 14.4.
+- 🐳 **Un `Dockerfile` por aplicación** (config-server, token-issuer, gateway, quests, adventurers, treasury): imagen `eclipse-temurin:21-jre`, usuario de sistema sin privilegios y `COPY build/libs/app.jar`. Cada `build.gradle` fija `archiveFileName = 'app.jar'` en `bootJar`.
+- 🧩 **`compose.yaml` completo**: además de Kafka y Postgres, define `zipkin`, `config-server`, `token-issuer`, `adventurers`, `treasury`, `quests` y `gateway`, con `healthcheck` y `depends_on: condition: service_healthy` para que arranquen en orden.
+- 🌐 **Perfil `docker`** (`config-repo/application-docker.yml`): Kafka en `kafka:19092`, JWKS en `token-issuer:9000`, rutas del gateway a los nombres de servicio (`quests:8081`…), `guildboard.db.host=postgres` y `guildboard.adventurers.base-url` apuntando al contenedor. Los servicios arrancan con `SPRING_PROFILES_ACTIVE=docker,postgres` y `SPRING_CONFIG_IMPORT=configserver:http://config-server:8888`.
+- 🗄️ `application-postgres.yml` de cada servicio usa `${guildboard.db.host:localhost}`: el mismo binario vale en local y en contenedor.
+- 🩺 **Actuator** en gateway, quests, adventurers y treasury; `config-repo/application.yml` expone `health,metrics`. Los `SecurityConfig` dejan pasar `/actuator/health/**` sin token (para los *healthchecks*).
+- 🔭 **Trazas distribuidas**: `spring-boot-starter-zipkin`, muestreo al 100 % (`management.tracing.sampling.probability: 1.0`), observación activada en el `KafkaTemplate` y en el listener, y endpoint a `http://zipkin:9411` en Docker.
+- 🔗 Quests construye su `RestClient` a partir del `RestClient.Builder` de Spring (`AdventurerClientFactory`, `RestAdventurerDirectory`, `BeanConfig`) para que la llamada a Adventurers propague el contexto de traza; se añade `spring-boot-starter-restclient`.
+- 🧪 `scripts/c15-script.sh` (crea misiones, consulta una y revisa `/actuator/metrics/http.server.requests` con filtros por `uri`) y `scripts/tok.sh <usuario>` (imprime un token).
 
 ### 🧠 Qué se aprendió
 
 | Aprendizaje | Detalle |
 |---|---|
-| **Autenticación ≠ autorización** | `401` = no sabemos quién eres; `403` = sabemos quién eres pero no puedes |
-| **Firma asimétrica + JWKS** | El emisor firma con la clave privada; los servicios solo necesitan la pública para validar, sin compartir secretos |
-| **Roles por claim** | El claim `roles` se mapea a `ROLE_*` con `JwtGrantedAuthoritiesConverter` y se usa con `hasRole` |
-| **La identidad viene del token, no del cuerpo** | Aceptar una misión con `adventurerId` del cliente permitiría suplantar; se compara con `getSubject()` |
-| **Propagar la identidad entre servicios** | La llamada Quests → Adventurers debe llevar el mismo Bearer o recibirá `401` |
-| **La seguridad vive en el borde** | `SecurityConfig` está en el adaptador web; el dominio y los casos de uso no saben nada de JWT |
+| **`localhost` ya no es el mismo sitio** | Dentro de un contenedor, `localhost` es el propio contenedor: hay que usar el nombre del servicio de Compose (`postgres`, `kafka`, `config-server`…) y, para Kafka, un listener interno (`kafka:19092`) distinto del publicado al host (`localhost:9092`) |
+| **Perfiles para cambiar de entorno** | El perfil `docker` sobrescribe solo lo que cambia (hosts y URLs); el binario y el resto de la configuración son los mismos |
+| **Healthcheck + `depends_on`** | Que un contenedor esté arrancado no significa que esté listo; `service_healthy` ordena el arranque (config-server → servicios → gateway) |
+| **El *healthcheck* no puede exigir token** | `/actuator/health/**` se permite sin autenticar; el resto de actuator sigue protegido |
+| **Trazas = una petición, varios servicios** | Un `traceId` recorre gateway → quests → adventurers (y los mensajes Kafka); Zipkin lo dibuja como un árbol de *spans* |
+| **Traza y métricas responden a preguntas distintas** | La traza explica *qué pasó en esta petición*; las métricas (`http.server.requests`, filtradas por `uri`) explican *cómo se comporta el servicio en conjunto* |
+| **Usar el *builder* de Spring** | Un `RestClient` creado con `RestClient.builder()` a mano no lleva la instrumentación; el inyectado sí |
+| **Imágenes ligeras y seguras** | JRE en vez de JDK, usuario sin privilegios, y el JAR se construye fuera (`./gradlew bootJar`) y se copia |
 
 ---
 
@@ -272,6 +287,7 @@ Tests de arquitectura: `ArchitectureTest` (ArchUnit) por servicio y `StructureTe
 | **12** | Config Server | Una sola fuente de configuración para todos |
 | **13** | API Gateway | Una única puerta de entrada; `StripPrefix` |
 | **14** | Seguridad con JWT (token-issuer + resource servers) | 401 vs 403; la identidad sale del token, no del cuerpo |
+| **15** | Docker Compose para todo el sistema + Actuator y Zipkin | `localhost` ≠ nombre de servicio; healthchecks ordenan el arranque; trazas y métricas responden a preguntas distintas |
 
 ### 🎓 Aprendizajes generales hasta ahora
 
@@ -284,6 +300,7 @@ Tests de arquitectura: `ArchitectureTest` (ArchUnit) por servicio y `StructureTe
 7. **Configuración externalizada.** El mismo binario, distinto entorno.
 8. **Una puerta de entrada simplifica al cliente** y oculta la topología.
 9. **Nunca confíes en la identidad que manda el cliente.** Se deriva del token firmado y se valida en cada servicio, no solo en el gateway.
+10. **Lo que no se observa no se puede operar.** Healthchecks, métricas y trazas distribuidas son parte del sistema, no un añadido; y un entorno (local vs Docker) se cambia con perfiles, no con otro código.
 
 ### 🔭 Siguientes pasos posibles
 
@@ -291,5 +308,7 @@ Tests de arquitectura: `ArchitectureTest` (ArchUnit) por servicio y `StructureTe
 - Outbox pattern (hoy el guardado y la publicación del evento no son atómicos).
 - Validación del JWT también en el gateway y *rate limiting*.
 - Un proveedor de identidad real (Keycloak / Spring Authorization Server) en vez del token-issuer con claves en memoria y usuarios fijos.
-- Docker para los propios servicios y observabilidad (trazas, métricas).
+- Exportar las métricas a Prometheus + Grafana (hoy solo se consultan por `/actuator/metrics`) y centralizar logs.
+- Bajar el muestreo de trazas del 100 % y proteger/limitar los endpoints de actuator.
+- Construir los JAR dentro de la imagen (*multi-stage build*) en vez de requerir `./gradlew bootJar` antes.
 - Tests de integración con Testcontainers.

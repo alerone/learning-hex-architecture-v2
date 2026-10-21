@@ -2,7 +2,7 @@ spring:
   autoconfigure:
     exclude: []
   datasource:
-    url: jdbc:postgresql://localhost:5432/quests
+    url: "jdbc:postgresql://${guildboard.db.host:localhost}:5432/quests"
     username: guildboard
     password: guildboard
   jpa:

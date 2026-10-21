@@ -6,3 +6,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.security:spring-security-oauth2-jose'
 }
+
+tasks.named('bootJar') {
+    archiveFileName = 'app.jar'
+}

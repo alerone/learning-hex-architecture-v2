@@ -1,5 +1,9 @@
 spring:
   kafka:
+    template:
+      observation-enabled: true
+    listener:
+      observation-enabled: true
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -24,3 +28,12 @@ spring:
 guildboard:
   messaging:
     topic: guildboard.quest-completed
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics

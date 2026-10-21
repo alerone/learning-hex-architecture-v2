@@ -22,6 +22,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/adventurers")
                         .hasRole("GUILD_MASTER")
                         .anyRequest().authenticated())

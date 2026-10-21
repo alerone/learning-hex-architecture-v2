@@ -13,3 +13,7 @@ dependencies {
     implementation 'org.springframework.cloud:' +
         'spring-cloud-config-server'
 }
+
+tasks.named('bootJar') {
+    archiveFileName = 'app.jar'
+}

@@ -6,6 +6,7 @@ import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 import com.guildboard.quests.adapter.out.notification.LogNotificationSender;
 import com.guildboard.quests.adapter.out.rest.RestAdventurerDirectory;
@@ -59,12 +60,13 @@ public class BeanConfig {
 
     @Bean
     public AdventurerDirectory adventurerDirectory(
+            RestClient.Builder restClientBuilder,
             @Value("${guildboard.adventurers.connect-timeout}") Duration connectionTimeout,
             @Value("${guildboard.adventurers.read-timeout}") Duration readTimeout,
             @Value("${guildboard.adventurers.base-url}") String baseUrl,
             RetryRegistry retries,
             CircuitBreakerRegistry breakers) {
-        return new RestAdventurerDirectory(baseUrl,
+        return new RestAdventurerDirectory(restClientBuilder, baseUrl,
                 connectionTimeout, readTimeout,
                 breakers.circuitBreaker("adventurers"),
                 retries.retry("adventurers"));

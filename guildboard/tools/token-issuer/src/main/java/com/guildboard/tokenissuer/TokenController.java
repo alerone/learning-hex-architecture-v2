@@ -67,6 +67,4 @@ public class TokenController {
                     "token_type", "Bearer",
                     "expires_in", properties.ttl().toSeconds()));
     }
-
-    
 }

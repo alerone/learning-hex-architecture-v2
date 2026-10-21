@@ -14,4 +14,11 @@ dependencies {
         'spring-cloud-starter-gateway-server-webmvc'
     implementation 'org.springframework.cloud:' +
         'spring-cloud-starter-config'
+    implementation 'org.springframework.boot:' + 
+        'spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-zipkin'
+}
+
+tasks.named('bootJar') {
+    archiveFileName = 'app.jar'
 }

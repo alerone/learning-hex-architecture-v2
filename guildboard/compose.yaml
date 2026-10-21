@@ -43,6 +43,133 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  zipkin:
+    image: openzipkin/zipkin:3
+    ports:
+      - "9411:9411"
+
+  config-server:
+    build: ./config-server
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config-repo:/config-repo:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8888/application/default"]
+      interval: 5s
+      timeout: 3s 
+      retries: 20
+      start_period: 20s
+
+  token-issuer:
+    build: ./tools/token-issuer
+    ports:
+      - "9000:9000"
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:9000/.well-known/jwks.json"]
+      interval: 5s
+      timeout: 3s 
+      retries: 20
+      start_period: 20s
+
+  adventurers:
+    build: ./services/adventurers/bootstrap
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,postgres
+      SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      zipkin:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs",
+        "http://localhost:8082/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  treasury:
+    build: ./services/treasury/bootstrap
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,postgres
+      SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      zipkin:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs",
+        "http://localhost:8083/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  quests:
+    build: ./services/quests/bootstrap
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,postgres
+      SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      zipkin:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      adventurers:
+        condition: service_healthy
+      treasury:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs",
+        "http://localhost:8081/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  gateway:
+    build: ./gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
+    ports:
+      - "8080:8080"
+    depends_on:
+      zipkin:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      quests:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s 
+      retries: 20
+      start_period: 20s
+
 volumes:
   postgres-data:
   kafka-data:
